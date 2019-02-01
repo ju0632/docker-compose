@@ -1,0 +1,61 @@
+# wordpress
+
+version: '3.3'
+# 服务
+services:
+   mysql:
+     # 容器名称
+     container_name: mysql
+     # 镜像
+     image: mysql:latest
+     
+     volumes:
+       - code_data:/var/lib/mysql
+     # 意外退出时自动重启
+     restart: always
+     # 环境变量
+     environment:
+       MYSQL_ROOT_PASSWORD: P@ssw0rd
+       MYSQL_DATABASE: wordpress
+       MYSQL_USER: wordpress
+       MYSQL_PASSWORD: wordpress
+     # 网络
+     networks:
+       - code-network
+       
+   nginx:
+     image: nginx:latest
+     container_name: nginx
+     volumes:
+      - /home/docker/nginx:/home/docker/nginx
+     ports:
+      - "80:80"
+      - "443:443"
+     restart: always
+     networks:
+      - code-network
+   
+   wordpress:
+    # 依赖服务 编排启动顺序
+     depends_on:
+       - mysql
+     container_name: wordpress
+     image: wordpress:latest
+    # 端口映射
+     ports:
+       - "8000:80"
+     restart: always
+    # 环境变量
+     environment:
+       WORDPRESS_DB_HOST: mysql:3306
+       WORDPRESS_DB_USER: wordpress
+       WORDPRESS_DB_PASSWORD: wordpress
+     networks:
+      - code-network
+# 网络      
+networks:
+  code-network:
+    driver: bridge
+    
+volumes:
+    code_data:
